@@ -1,27 +1,23 @@
 package output
 
 import (
-	"bytes"
 	jsonE "encoding/json"
 	"github.com/TylerBrock/colorjson"
 	"jpath/common"
 )
 
 func Prettify(json [][]byte, indent int) []byte {
-	joined := append(bytes.Join(json, []byte(",")), byte(']'))
-	outJson := append([]byte("["), joined...)
+	outJson := common.WrapIntoArray(json)
 	f := colorjson.NewFormatter()
 	f.Indent = indent
-
 	var unmarshalInterface []interface{}
-	er := jsonE.Unmarshal(outJson, &unmarshalInterface)
-	if er != nil {
-		common.ExitWithError(common.MarshalError)
-	}
-	marshalledOutput, er := f.Marshal(unmarshalInterface)
-	if er != nil {
-		common.ExitWithError(common.MarshalError)
-	}
+	handleError(jsonE.Unmarshal(outJson, &unmarshalInterface))
+	marshalledOut, _ := f.Marshal(unmarshalInterface)
+	return marshalledOut
+}
 
-	return marshalledOutput
+func handleError(e error) {
+	if e != nil {
+		common.ExitWithError(common.MarshalError)
+	}
 }

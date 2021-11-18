@@ -1,6 +1,9 @@
 package common
 
-import parser "github.com/buger/jsonparser"
+import (
+	"bytes"
+	parser "github.com/buger/jsonparser"
+)
 
 func Tokenize(json []byte) [][]byte {
 	var tokens [][]byte
@@ -31,4 +34,8 @@ func extractElementsFromArray(json []byte) [][]byte {
 		ExitWithError(InvalidJson)
 	}
 	return tokens
+}
+
+func WrapIntoArray(json [][]byte) []byte {
+	return append(append([]byte("["), bytes.Join(json, []byte(","))...), []byte("]")...)
 }
