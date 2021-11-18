@@ -9,9 +9,10 @@ import (
 const (
 	KeyRegex       string = `^[a-zA-Z0-9_-]+$`
 	FilterRegex           = `^(\w+)?\[([\w.]+)(=|!=)([^]]+)]$`
-	SelectionRegex        = `^{[\w,.-]+}$`
+	SelectionRegex        = `^{([\w,.-]+)}$`
 	SliceRegex            = `^\[(\d+)?:(\d+)?\]$`
 	CountRegex            = `^#$`
+	//NonStringRegex 		  = `^\d+|null|$`
 )
 
 // parseExpression Parses the expressions and makes workable tokens out of the expression
@@ -19,7 +20,7 @@ const (
 // Dots are allowed within square and curly brackets. Not allowed outside of them
 func parseExpression(expr string) []string {
 	var tokens []string
-	var paranstack []bool
+	var parenStack []bool
 
 	var token = ""
 	for _, char := range expr {
@@ -27,29 +28,29 @@ func parseExpression(expr string) []string {
 		case ' ', '"', '\'':
 			continue
 		case '.':
-			if token != "" && len(paranstack) == 0 {
+			if token != "" && len(parenStack) == 0 {
 				tokens = append(tokens, token)
 				token = ""
-			} else if len(paranstack) > 0 {
+			} else if len(parenStack) > 0 {
 				token = token + string(char)
 			}
 		case '[', '{':
-			paranstack = append(paranstack, true)
+			parenStack = append(parenStack, true)
 			token = token + string(char)
 		case ']', '}':
-			if len(paranstack) == 0 {
+			if len(parenStack) == 0 {
 				common.ExitWithError(common.InvalidExpr)
 			}
-			paranstack = paranstack[:len(paranstack)-1]
+			parenStack = parenStack[:len(parenStack)-1]
 			token = token + string(char)
 		default:
 			token = token + string(char)
 		}
 	}
-	// if after the loop we still have open paranthesis, that's an error
-	if len(token) > 0 && len(paranstack) > 0 {
+	// if after the loop we still have open parenthesis, that's an error
+	if len(token) > 0 && len(parenStack) > 0 {
 		common.ExitWithError(common.InvalidExpr)
-	} else if len(token) > 0 && len(paranstack) == 0 {
+	} else if len(token) > 0 && len(parenStack) == 0 {
 		tokens = append(tokens, token)
 	}
 	return tokens
@@ -63,12 +64,18 @@ func ProcessExpression(expr string, json [][]byte) [][]byte {
 	keyReg := regexp.MustCompile(KeyRegex)
 	filterReg := regexp.MustCompile(FilterRegex)
 	selectionReg := regexp.MustCompile(SelectionRegex)
+	countReg := regexp.MustCompile(CountRegex)
+	sliceReg := regexp.MustCompile(SliceRegex)
 	for _, exp := range parseExpression(expr) {
 		if keyReg.MatchString(exp) {
-			json = Get(exp, json)
+			json = Get(exp, json, true)
 		} else if filterReg.MatchString(exp) {
 			json = Filter(exp, json)
 		} else if selectionReg.MatchString(exp) {
+			json = Select(exp, json)
+		} else if countReg.MatchString(exp) {
+			// todo: implementation pending
+		} else if sliceReg.MatchString(exp) {
 			// todo: implementation pending
 		} else {
 			common.ExitWithError(common.InvalidExpr)
