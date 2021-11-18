@@ -2,7 +2,7 @@ package parser
 
 import (
 	"fmt"
-	"jpath-go/common"
+	"jpath/common"
 	"reflect"
 	"strings"
 	"testing"
@@ -21,7 +21,7 @@ func TestParseExpression(t *testing.T) {
 		{"nestedfilter", `..results[name.title=Miss]`, `results[name.title=Miss]`},
 	}
 	for _, testcase := range testData {
-		output := ParseExpression(testcase.input)
+		output := parseExpression(testcase.input)
 		expectedTokens := strings.Split(testcase.expected, "|")
 		fmt.Println(output)
 		if !reflect.DeepEqual(expectedTokens, output) {
@@ -40,6 +40,7 @@ func TestProcessExpression(t *testing.T) {
 		{"base", `info`, []string{`{"seed":"17b3298ce93fa1a4","results":10,"page":1,"version":"1.3"}`}},
 		{"nested", `results.gender`, []string{"female", "male", "male", "male", "female", "male", "female", "male", "female", "male"}},
 		{"deepnested", `results.name.title`, []string{"Mrs", "Mr", "Mr", "Mr", "Mrs", "Mr", "Mrs", "Mr", "Miss", "Mr"}},
+		{"nestedsub", `results.name[title=Mrs]`, []string{`{"title":"Mrs","first":"Melodie","last":"Gagné"}`, `{"title":"Mrs","first":"Scarlett","last":"Ramos"}`, `{"title":"Mrs","first":"Johanne","last":"Leonhardt"}`}},
 	}
 	for _, testcase := range testData {
 		output := ProcessExpression(testcase.input, testJson)
@@ -48,7 +49,8 @@ func TestProcessExpression(t *testing.T) {
 			expectedTokens = append(expectedTokens, []byte(i))
 		}
 		if !reflect.DeepEqual(expectedTokens, output) {
-			t.Errorf("%s --> failed", testcase.name)
+			//t.Errorf("%s --> failed", testcase.name)
+			t.Errorf("%s --> failed \n===\nexpected: %s\n===\nactual: %s\n", testcase.name, expectedTokens, output)
 		}
 	}
 }

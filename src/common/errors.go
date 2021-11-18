@@ -12,6 +12,7 @@ const (
 	InvalidJson
 	InvalidExpr
 	FileError
+	MarshalError
 )
 
 func ExitWithMessage(msg string) {
@@ -27,6 +28,8 @@ func ExitWithError(code ErrorCode) {
 		ExitWithMessage("invalid expression, aborting")
 	case FileError:
 		ExitWithMessage("file not json or unreadable, aborting")
+	case MarshalError:
+		ExitWithMessage("error while rendering output, must be a bug, sorry :(")
 	default:
 		// no op
 	}

@@ -10,16 +10,17 @@ But parsing json didn't have to be this hard. Back in the days of xml, we had xp
 which made searching and parsing xml documents easier. For json, there is very little.
 
 There is `jq` and more recently `jsonpath` 
-`jq` is feature rich owing to active development 
-`jpath` is an attempt at providing a very easy to use DSL and parser standard for json documents
-
+<br>
+`jq` is feature rich owing to active development
+<br>
+`jpath` is an attempt at providing a very easy to use DSL and parser for json documents
 
 ## Concepts
 
 jpath is optimized for find/filtering json documents. And ease-of-use of such operations. 
 jpath is inspired by the [jsonpath spec](https://github.com/json-path/JsonPath), 
-and tries to improve upon it by reducing/eliminating a lot of special characters
-needed to get to the desired document 
+and tries to improve upon it by reducing/eliminating a lot of special characters (`$`, `"`, `@` etc.)
+needed to get to the desired output 
 <br>
 An attempt is made to make the user expression as simple as possible without having to worry about arrays and objects. 
 So, as a foundational tenet, all json documents are treated as arrays. If the input json doc is an object, 
@@ -30,7 +31,8 @@ In order to make the user expressions simpler, we have made the following enhanc
 * very limited special characters to know and learn
 * no need to check whether a document is an object or array
 * no need to wrap strings in double quotes - simplifies the expression
-* space characters in expressions are optional
+* space characters in expressions are optional - for better readability
+* inline operations on json - reduces copying of data and leads to faster processing
 
 Note: [Input json is provided by this api](https://randomuser.me/api/?results=10)
 
@@ -39,11 +41,12 @@ Note: [Input json is provided by this api](https://randomuser.me/api/?results=10
 |Name        | Operator | Example                        | Description   |
 |------------|----------|--------------------------------|---------------|
 | Separator  | `.`      | `results.name`                 | descends to the given operators while maintaining json array output format
-| Filter*    |`[filter]`| `results[gender=female]`       | `[]` is an array, any expression inside the array forms the filter
+| Filter*    |`[filter]`| `results[gender=female]`       | `[]` is an array, any expression inside the array forms the filter, see [supported filters](#concepts-supported-filters)
 | Count      | `#`      | `results.#`                    | count of number of items in the array
-| Composition (TBD)| `{}`     | `results.name.{first:.first}`  | composes a new json structure from the given param
+| Slice      | `[1:3]`  | `results[1:2]`                 | sub-array from the given indexes
+| Selection (TBD)| `{}` | `results.name.{first,last}`    | prints only the selected fields from the results
 
-### Concepts - supported operations
+### Concepts - supported filters
 |Name        | Operator | Example                        | Description   |
 |------------|----------|--------------------------------|---------------|
 | Equality   | `=`      | `results[name.title=Mr]`       | find results whose title is `Mr`
@@ -55,7 +58,7 @@ Note: [Input json is provided by this api](https://randomuser.me/api/?results=10
 ### Concepts - comparison with other tools
 | Description                         | jq                      | jsonpath                          | jpath    |
 |-------------------------------------|-------------------------|-----------------------------------|-----------|
-| find females in the result          | .results[] &#124; select(.gender == "female") | `$.results[?(@.gender=="female")]` | `results[gender=female]`
+| find females in the result          | `.results[] \| select(.gender == "female")` | `$.results[?(@.gender=="female")]` | `results[gender=female]`
 | find count of results from above    | N/A                     | N/A                               | `results[gender=female].#`
 | todo: more examples
 

@@ -2,8 +2,11 @@ package main
 
 import (
 	"flag"
-	"jpath-go/common"
-	"jpath-go/parser"
+	"fmt"
+	"jpath/input"
+	"jpath/output"
+	"jpath/parser"
+	"os"
 	"strings"
 )
 
@@ -15,11 +18,21 @@ func main() {
 	// 4. pretty print output
 	// 5. colorized output
 	// 6. composition
+	// 7. tabular output
 
 	flag.Parse()
 	expr := strings.TrimSpace(flag.Arg(0))
 	json := strings.TrimSpace(flag.Arg(1))
 
-	jsonb := common.Tokenize([]byte(json))
-	parser.ProcessExpression(expr, jsonb)
+	// validation and print help
+	if expr == "" {
+		fmt.Println(input.PrintHelp())
+		os.Exit(0)
+	}
+
+	jsonb := input.ParseInputJson(json)
+
+	parsedOutput := parser.ProcessExpression(expr, jsonb)
+	marshal := output.Prettify(parsedOutput, 2)
+	fmt.Printf("%s\n", marshal)
 }
