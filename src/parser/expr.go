@@ -1,22 +1,23 @@
 package parser
 
 import (
-	"jpath-go/common"
+	"jpath/common"
 	"regexp"
 )
 
 // fixme: need a smarter way to hold parsed regexes. This is very ugly
-type ExprRegex string
-
 const (
-	KEY_REGEX    ExprRegex = `^[a-zA-Z0-9_-]+$`
-	FILTER_REGEX           = `^(\w+)?\[([\w.]+)(=|!=)([^]]+)]$`
+	KeyRegex       string = `^[a-zA-Z0-9_-]+$`
+	FilterRegex           = `^(\w+)?\[([\w.]+)(=|!=)([^]]+)]$`
+	SelectionRegex        = `^{[\w,.-]+}$`
+	SliceRegex            = `^\[(\d+)?:(\d+)?\]$`
+	CountRegex            = `^#$`
 )
 
-// ParseExpression Parses the expressions and makes workable tokens out of the expression
+// parseExpression Parses the expressions and makes workable tokens out of the expression
 // The basic idea is to keep track of dot separators and paranthesis
 // Dots are allowed within square and curly brackets. Not allowed outside of them
-func ParseExpression(expr string) []string {
+func parseExpression(expr string) []string {
 	var tokens []string
 	var paranstack []bool
 
@@ -54,21 +55,24 @@ func ParseExpression(expr string) []string {
 	return tokens
 }
 
+// ProcessExpression processes a given json array with the matching expressions
+// This is the entry point for the jpath parser. This expects a json byte array
+// tokenized input already.
 func ProcessExpression(expr string, json [][]byte) [][]byte {
-	var filtered [][]byte
 	// fixme: the regexes must be centralized somehow. This is a bad place to put it
-	keyReg := regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
-	filterReg := regexp.MustCompile(`^(\w+)?\[([\w.]+)(=|!=)([^]]+)]$`)
-	for _, exp := range ParseExpression(expr) {
+	keyReg := regexp.MustCompile(KeyRegex)
+	filterReg := regexp.MustCompile(FilterRegex)
+	selectionReg := regexp.MustCompile(SelectionRegex)
+	for _, exp := range parseExpression(expr) {
 		if keyReg.MatchString(exp) {
 			json = Get(exp, json)
 		} else if filterReg.MatchString(exp) {
-			json = append(filtered, Filter(exp, json)...)
+			json = Filter(exp, json)
+		} else if selectionReg.MatchString(exp) {
 			// todo: implementation pending
 		} else {
 			common.ExitWithError(common.InvalidExpr)
 		}
 	}
-
 	return json
 }

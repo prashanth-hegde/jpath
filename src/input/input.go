@@ -6,7 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
-	"jpath-go/common"
+	"jpath/common"
 	"os"
 )
 
