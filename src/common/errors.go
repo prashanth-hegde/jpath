@@ -2,35 +2,46 @@ package common
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 )
 
-type ErrorCode int8
+type ErrorCode int
 
 const (
 	Success ErrorCode = iota
 	InvalidJson
 	InvalidExpr
 	FileError
-	MarshalError
+	UnknownDataType
+	UnmarshalError
+	UnprintableData
 )
 
-func ExitWithMessage(msg string) {
-	_, _ = fmt.Fprintf(os.Stderr, "%s\n", msg)
-	os.Exit(2)
+func ExitWithError(code ErrorCode) {
+	_, _ = fmt.Fprintf(os.Stderr, "%s\n", ErrorMessage[code])
+	os.Exit(int(code))
 }
 
-func ExitWithError(code ErrorCode) {
-	switch code {
-	case InvalidJson:
-		ExitWithMessage("invalid json, aborting")
-	case InvalidExpr:
-		ExitWithMessage("invalid expression, aborting")
-	case FileError:
-		ExitWithMessage("file not json or unreadable, aborting")
-	case MarshalError:
-		ExitWithMessage("error while rendering output, must be a bug, sorry :(")
-	default:
-		// no op
-	}
+var ErrorMessage = map[ErrorCode]string{
+	Success:         "",
+	InvalidJson:     "invalid json, aborting",
+	InvalidExpr:     "invalid expression, aborting",
+	FileError:       "file not json or unreadable, aborting",
+	UnknownDataType: "unknown data type in json object",
+	UnmarshalError:  "error while unmarshalling json into map",
+	UnprintableData: "data not printable",
+}
+
+func (e ErrorCode) GetMsg() string {
+	return ErrorMessage[e]
+}
+
+func (e ErrorCode) ExitWithMessage() {
+	_, _ = fmt.Fprintf(os.Stderr, "%s\n", e.GetMsg())
+	os.Exit(int(e))
+}
+
+func (e ErrorCode) Error() error {
+	return errors.New(e.GetMsg())
 }
