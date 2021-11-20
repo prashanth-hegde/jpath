@@ -60,6 +60,6 @@ Note: [Input json is provided by this api](https://randomuser.me/api/?results=10
 |-------------------------------------|-------------------------|-----------------------------------|-----------|
 | find females in the result          | `.results[] \| select(.gender == "female")` | `$.results[?(@.gender=="female")]` | `results[gender=female]`
 | find count of results from above    | N/A                     | N/A                               | `results[gender=female].#`
-| todo: more examples
+| find name, dob and cell# for Males  | `.results[] \| select(.name.title = "Mr") \| {first:.name.first,last:.name.last,dob:.dob.date,cell:.cell}` | N/A | `'results[name.title=Mr].{name.first,name.last,dob.date,cell}'`
 
 TODO: more documentation pending
