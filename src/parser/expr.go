@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"github.com/pkg/errors"
 	"jpath/common"
 	"regexp"
 )
@@ -18,7 +19,7 @@ const (
 // parseExpression Parses the expressions and makes workable tokens out of the expression
 // The basic idea is to keep track of dot separators and paranthesis
 // Dots are allowed within square and curly brackets. Not allowed outside of them
-func parseExpression(expr string) []string {
+func parseExpression(expr string) ([]string, error) {
 	var tokens []string
 	var parenStack []bool
 
@@ -39,7 +40,7 @@ func parseExpression(expr string) []string {
 			token = token + string(char)
 		case ']', '}':
 			if len(parenStack) == 0 {
-				common.ExitWithError(common.InvalidExpr)
+				return nil, common.InvalidExpr.Error()
 			}
 			parenStack = parenStack[:len(parenStack)-1]
 			token = token + string(char)
@@ -49,24 +50,28 @@ func parseExpression(expr string) []string {
 	}
 	// if after the loop we still have open parenthesis, that's an error
 	if len(token) > 0 && len(parenStack) > 0 {
-		common.ExitWithError(common.InvalidExpr)
+		return nil, common.InvalidExpr.Error()
 	} else if len(token) > 0 && len(parenStack) == 0 {
 		tokens = append(tokens, token)
 	}
-	return tokens
+	return tokens, nil
 }
 
 // ProcessExpression processes a given json array with the matching expressions
 // This is the entry point for the jpath parser. This expects a json byte array
 // tokenized input already.
-func ProcessExpression(expr string, json [][]byte) [][]byte {
+func ProcessExpression(expr string, json [][]byte) ([][]byte, error) {
+	parsedExpr, e := parseExpression(expr)
+	if e != nil {
+		return nil, errors.Wrap(e, "error while parsing expression")
+	}
 	// fixme: the regexes must be centralized somehow. This is a bad place to put it
 	keyReg := regexp.MustCompile(KeyRegex)
 	filterReg := regexp.MustCompile(FilterRegex)
 	selectionReg := regexp.MustCompile(SelectionRegex)
 	countReg := regexp.MustCompile(CountRegex)
 	sliceReg := regexp.MustCompile(SliceRegex)
-	for _, exp := range parseExpression(expr) {
+	for _, exp := range parsedExpr {
 		if keyReg.MatchString(exp) {
 			json = Get(exp, json, true)
 		} else if filterReg.MatchString(exp) {
@@ -78,8 +83,8 @@ func ProcessExpression(expr string, json [][]byte) [][]byte {
 		} else if sliceReg.MatchString(exp) {
 			// todo: implementation pending
 		} else {
-			common.ExitWithError(common.InvalidExpr)
+			return nil, common.InvalidExpr.Error()
 		}
 	}
-	return json
+	return json, nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"jpath/common"
 	"jpath/input"
 	"jpath/output"
 	"jpath/parser"
@@ -34,8 +35,7 @@ func main() {
 
 	// table output
 	var table bool
-	rootCmd.PersistentFlags().BoolVarP(&table, "table", "t", false, "print output in table format")
-	fmt.Printf("tabularize = %t\n", table)
+	rootCmd.Flags().BoolVarP(&table, "table", "t", false, "print output in table format")
 
 	// parse input args
 	if err := rootCmd.Execute(); err != nil {
@@ -46,8 +46,28 @@ func main() {
 		os.Exit(1)
 	}
 
+	// parse the input
 	jsonb := input.ParseInputJson(json)
-	parsedOutput := parser.ProcessExpression(expr, jsonb)
+	parsedOutput, err := parser.ProcessExpression(expr, jsonb)
+	if err != nil {
+		if strings.Contains(err.Error(), common.InvalidExpr.GetMsg()) {
+			_, _ = fmt.Fprintf(os.Stderr, "\n%s\n", common.InvalidExpr.GetMsg())
+			os.Exit(int(common.InvalidExpr))
+		}
+	} else if parsedOutput == nil {
+		os.Exit(int(common.Success))
+	}
+
+	// process output
+	if table {
+		err = output.PrintJsonTable(parsedOutput)
+		if err == nil {
+			os.Exit(int(common.Success))
+		}
+	}
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "\n%s, printing as json\n", err.Error())
+	}
 	marshal := output.Prettify(parsedOutput, 2)
 	fmt.Printf("%s\n", marshal)
 }

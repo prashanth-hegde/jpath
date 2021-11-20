@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 )
 
@@ -39,4 +40,8 @@ func (e ErrorCode) GetMsg() string {
 func (e ErrorCode) ExitWithMessage() {
 	_, _ = fmt.Fprintf(os.Stderr, "%s\n", e.GetMsg())
 	os.Exit(int(e))
+}
+
+func (e ErrorCode) Error() error {
+	return errors.New(e.GetMsg())
 }
