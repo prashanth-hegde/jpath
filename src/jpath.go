@@ -23,23 +23,31 @@ func main() {
 
 	// root command parser
 	var rootCmd = &cobra.Command{
-		Use:   "jpath",
+		Use:   "jpath <expression> <json>",
 		Short: "analyzer for json data",
 		Long: `An easy to use json filter to analyze json documents
                 Complete documentation is available at https://gitlab.com/encyclopaedia/jpath/-/blob/main/readme.md`,
+		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			expr = strings.TrimSpace(args[0])
-			json = strings.TrimSpace(args[1])
+			switch len(args) {
+			case 1:
+				expr = strings.TrimSpace(args[0])
+				json = ""
+			case 2:
+				expr = strings.TrimSpace(args[0])
+				json = strings.TrimSpace(args[1])
+			default:
+			}
 		},
 	}
 
 	// table output
 	var table bool
-	rootCmd.Flags().BoolVarP(&table, "table", "t", false, "print output in table format")
+	rootCmd.Flags().BoolVarP(&table, "table", "t", false, "print output as table")
 
 	// parse input args
 	if err := rootCmd.Execute(); err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "\n%s\n\n%s\n", err.Error(), rootCmd.UsageString())
+		//_, _ = fmt.Fprintf(os.Stderr, "\n%s\n\n%s\n", err.Error(), rootCmd.UsageString())
 		os.Exit(1)
 	} else if expr == "" && json == "" {
 		_, _ = fmt.Fprintf(os.Stderr, "\n%s\n\n%s\n", "no expression or json document provided", rootCmd.UsageString())
