@@ -13,7 +13,7 @@ import (
 // input is the fields and list of tokenized json docs to parse
 // Tokenize param if true, treats array as a list of items (for further breakdown)
 // if false, treats array as just a string, and does not break down the array
-func Get(path string, json [][]byte, tokenize bool) [][]byte {
+func Get(path string, json [][]byte, tokenize bool) ([][]byte, error) {
 	var tokens [][]byte
 	fields := strings.Split(path, ".")
 	for _, item := range json {
@@ -21,7 +21,11 @@ func Get(path string, json [][]byte, tokenize bool) [][]byte {
 		if e != nil {
 			// ignore the error and move on
 		} else if t == parser.Array && tokenize {
-			tokens = append(tokens, common.Tokenize(v)...)
+			tokenizedJson, e := common.Tokenize(v)
+			if e != nil {
+				return nil, e
+			}
+			tokens = append(tokens, tokenizedJson...)
 		} else {
 			tokens = append(tokens, v)
 		}
@@ -29,12 +33,13 @@ func Get(path string, json [][]byte, tokenize bool) [][]byte {
 	if len(fields) > 1 {
 		return Get(strings.Join(fields[1:], "."), tokens, tokenize)
 	} else {
-		return tokens
+		return tokens, nil
 	}
 }
 
-func Filter(path string, json [][]byte) [][]byte {
+func Filter(path string, json [][]byte) ([][]byte, error) {
 	filterRe := regexp.MustCompile(FilterRegex)
+	var e error
 	var filtered [][]byte
 	// don't worry about the nested for loops
 	// the outermost and innermost are guaranteed to have a size of 1
@@ -47,11 +52,21 @@ func Filter(path string, json [][]byte) [][]byte {
 		value := line[4]
 
 		if len(descend) > 0 {
-			json = Get(descend, json, true)
+			json, e = Get(descend, json, true)
+			if e != nil {
+				return nil, e
+			}
 		}
 		for _, doc := range json {
-			currDoc := common.Tokenize(doc)
-			for _, intermediate := range Get(field, currDoc, true) {
+			currDoc, e := common.Tokenize(doc)
+			if e != nil {
+				return nil, e
+			}
+			values, e := Get(field, currDoc, true)
+			if e != nil {
+				return nil, e
+			}
+			for _, intermediate := range values {
 				switch operator {
 				case "=":
 					if bytes.Compare(intermediate, []byte(value)) == 0 {
@@ -69,10 +84,10 @@ func Filter(path string, json [][]byte) [][]byte {
 
 		// todo: implementation pending
 	}
-	return filtered
+	return filtered, nil
 }
 
-func Select(path string, json [][]byte) [][]byte {
+func Select(path string, json [][]byte) ([][]byte, error) {
 	selectRe := regexp.MustCompile(SelectionRegex)
 	var selected [][]byte
 	for _, line := range selectRe.FindAllStringSubmatch(path, -1) {
@@ -83,7 +98,10 @@ func Select(path string, json [][]byte) [][]byte {
 			var keys [][]byte
 			var values [][]byte
 			for _, field := range fields {
-				result := Get(field, jsonArray, false)
+				result, e := Get(field, jsonArray, false)
+				if e != nil {
+					return nil, e
+				}
 				if len(result) > 0 {
 					fieldName := field[strings.LastIndex(field, ".")+1:]
 					keys = append(keys, []byte(fieldName))
@@ -91,11 +109,14 @@ func Select(path string, json [][]byte) [][]byte {
 				}
 			}
 			wrappedObj := constructObject(keys, values)
-			tokenizedOutput := common.Tokenize(wrappedObj)
+			tokenizedOutput, e := common.Tokenize(wrappedObj)
+			if e != nil {
+				return nil, e
+			}
 			selected = append(selected, tokenizedOutput...)
 		}
 	}
-	return selected
+	return selected, nil
 }
 
 func constructObject(keys [][]byte, values [][]byte) []byte {

@@ -54,19 +54,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	// parse the input
-	jsonb := input.ParseInputJson(json)
+	// parse the input json
+	jsonb, err := input.ParseInputJson(json)
+	if err != nil {
+		common.ExitWithError(common.InvalidJson)
+	}
+	// parse the expression
 	parsedOutput, err := parser.ProcessExpression(expr, jsonb)
 	if err != nil {
 		if strings.Contains(err.Error(), common.InvalidExpr.GetMsg()) {
-			_, _ = fmt.Fprintf(os.Stderr, "\n%s\n", common.InvalidExpr.GetMsg())
-			os.Exit(int(common.InvalidExpr))
+			common.ExitWithError(common.InvalidExpr)
+		} else {
+			// fixme: handle more error types here
+			common.ExitWithError(common.Success)
 		}
 	} else if parsedOutput == nil {
 		os.Exit(int(common.Success))
 	}
 
 	// process output
+	// fixme: the error handling below is sort of wonky. need more elegant handling
 	if table {
 		err = output.PrintJsonTable(parsedOutput)
 		if err == nil {

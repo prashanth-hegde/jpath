@@ -15,7 +15,7 @@ func TestParseInputJson(t *testing.T) {
 		// todo: add stdin tests, I don't know how yet
 	}
 	for _, testcase := range testData {
-		output := ParseInputJson(testcase.input)
+		output, _ := ParseInputJson(testcase.input)
 		var expB [][]byte
 		for _, exp := range testcase.expected {
 			expB = append(expB, []byte(exp))
