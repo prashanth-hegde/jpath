@@ -30,9 +30,11 @@ func parseExpression(expr string) ([]string, error) {
 			continue
 		case '.':
 			if token != "" && len(parenStack) == 0 {
+				// example results.name
 				tokens = append(tokens, token)
 				token = ""
 			} else if len(parenStack) > 0 {
+				// example results[name.first=Adam]
 				token = token + string(char)
 			}
 		case '[', '{':
@@ -73,11 +75,11 @@ func ProcessExpression(expr string, json [][]byte) ([][]byte, error) {
 	sliceReg := regexp.MustCompile(SliceRegex)
 	for _, exp := range parsedExpr {
 		if keyReg.MatchString(exp) {
-			json = Get(exp, json, true)
+			json, e = Get(exp, json, true)
 		} else if filterReg.MatchString(exp) {
 			json, e = Filter(exp, json)
 		} else if selectionReg.MatchString(exp) {
-			json = Select(exp, json)
+			json, e = Select(exp, json)
 		} else if countReg.MatchString(exp) {
 			// todo: implementation pending
 		} else if sliceReg.MatchString(exp) {

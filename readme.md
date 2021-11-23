@@ -41,7 +41,7 @@ Note: [Input json is provided by this api](https://randomuser.me/api/?results=10
 |Name        | Operator | Example                        | Description   |
 |------------|----------|--------------------------------|---------------|
 | Separator  | `.`      | `results.name`                 | descends to the given operators while maintaining json array output format
-| Filter*    |`[filter]`| `results[gender=female]`       | `[]` is an array, any expression inside the array forms the filter, see [supported filters](#concepts-supported-filters)
+| Filter*    |`[filter]`| `results[gender=female]`       | `[]` is an array, any expression inside the array forms the filter, see [supported filters](#concepts---supported-filters)
 | Count      | `#`      | `results.#`                    | count of number of items in the array
 | Slice      | `[1:3]`  | `results[1:2]`                 | sub-array from the given indexes
 | Selection (TBD)| `{}` | `results.name.{first,last}`    | prints only the selected fields from the results
@@ -63,3 +63,10 @@ Note: [Input json is provided by this api](https://randomuser.me/api/?results=10
 | find name, dob and cell# for Males  | `.results[] \| select(.name.title = "Mr") \| {first:.name.first,last:.name.last,dob:.dob.date,cell:.cell}` | N/A | `'results[name.title=Mr].{name.first,name.last,dob.date,cell}'`
 
 TODO: more documentation pending
+
+### Credits
+Credits and heartfelt thanks to the following opensource projects that makes `jpath` a reality
+
+1. [colorjson](https://github.com/TylerBrock/colorjson) - colored terminal output
+2. [tablewriter](https://github.com/olekukonko/tablewriter) - table output
+3. [cobra](https://github.com/spf13/cobra) - cli parsing

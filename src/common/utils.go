@@ -5,11 +5,11 @@ import (
 	parser "github.com/buger/jsonparser"
 )
 
-func Tokenize(json []byte) [][]byte {
+func Tokenize(json []byte) ([][]byte, error) {
 	var tokens [][]byte
 	v, t, _, e := parser.Get(json)
 	if e != nil {
-		ExitWithError(InvalidJson)
+		return nil, InvalidJson.Error()
 	}
 	if t == parser.Array {
 		tokens = append(tokens, extractElementsFromArray(v)...)
@@ -17,7 +17,7 @@ func Tokenize(json []byte) [][]byte {
 		tokens = append(tokens, v)
 	}
 
-	return tokens
+	return tokens, nil
 }
 
 func extractElementsFromArray(json []byte) [][]byte {
