@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	parser "github.com/buger/jsonparser"
+	"github.com/pkg/errors"
 	"jpath/common"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -33,7 +35,7 @@ func Get(path string, json [][]byte, tokenize bool) [][]byte {
 	}
 }
 
-func Filter(path string, json [][]byte) [][]byte {
+func Filter(path string, json [][]byte) ([][]byte, error) {
 	filterRe := regexp.MustCompile(FilterRegex)
 	var filtered [][]byte
 	// don't worry about the nested for loops
@@ -61,15 +63,29 @@ func Filter(path string, json [][]byte) [][]byte {
 					if bytes.Compare(intermediate, []byte(value)) != 0 {
 						filtered = append(filtered, doc)
 					}
+				case "<", ">", "<=", ">=":
+					lhs, e := strconv.ParseFloat(string(intermediate), 64)
+					if e != nil {
+						return nil, errors.Wrap(e, "error while parsing number")
+					}
+					rhs, e := strconv.ParseFloat(value, 64)
+					if e != nil {
+						return nil, errors.Wrap(e, "error while parsing number")
+					}
+					if operator == "<" && lhs < rhs ||
+						operator == "<=" && lhs <= rhs ||
+						operator == ">" && lhs > rhs ||
+						operator == ">=" && lhs >= rhs {
+						filtered = append(filtered, doc)
+					}
 				default:
 					// todo: pending
 				}
 			}
 		}
-
 		// todo: implementation pending
 	}
-	return filtered
+	return filtered, nil
 }
 
 func Select(path string, json [][]byte) [][]byte {
