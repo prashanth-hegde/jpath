@@ -13,8 +13,8 @@ func Prettify(json [][]byte, indent int) []byte {
 	f := colorjson.NewFormatter()
 	f.Indent = indent
 
-	_, _, _, e := parser.Get(json[0])
-	if e != nil {
+	_, t, _, e := parser.Get(json[0])
+	if e != nil || t != parser.Object {
 		// output is not an object, salvage it by treating it as an array of strings
 		outJson = append(append([]byte("[\""), bytes.Join(json, []byte(`","`))...), []byte("\"]")...)
 	}
