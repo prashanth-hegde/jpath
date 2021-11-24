@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	parser "github.com/buger/jsonparser"
+	"github.com/pkg/errors"
 	"jpath/common"
 	"regexp"
 	"strings"
@@ -23,7 +24,7 @@ func Get(path string, json [][]byte, tokenize bool) ([][]byte, error) {
 		} else if t == parser.Array && tokenize {
 			tokenizedJson, e := common.Tokenize(v)
 			if e != nil {
-				return nil, e
+				return nil, errors.Wrapf(e, "error while tokenizing get from field %s", fields[0])
 			}
 			tokens = append(tokens, tokenizedJson...)
 		} else {
