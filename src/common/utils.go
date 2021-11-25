@@ -3,13 +3,14 @@ package common
 import (
 	"bytes"
 	parser "github.com/buger/jsonparser"
+	"github.com/pkg/errors"
 )
 
-func Tokenize(json []byte) [][]byte {
+func Tokenize(json []byte) ([][]byte, error) {
 	var tokens [][]byte
 	v, t, _, e := parser.Get(json)
 	if e != nil {
-		ExitWithError(InvalidJson)
+		return nil, errors.Wrap(InvalidJson.Error(), "error during tokenization")
 	}
 	if t == parser.Array {
 		tokens = append(tokens, extractElementsFromArray(v)...)
@@ -17,7 +18,7 @@ func Tokenize(json []byte) [][]byte {
 		tokens = append(tokens, v)
 	}
 
-	return tokens
+	return tokens, nil
 }
 
 func extractElementsFromArray(json []byte) [][]byte {

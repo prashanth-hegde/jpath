@@ -16,7 +16,7 @@ func TestTokenizeB(t *testing.T) {
 		{"array of array", `[[{"hello": "world"}, {"hello": "world"}]]`, []string{`{"hello": "world"}`, `{"hello": "world"}`}},
 	}
 	for _, testcase := range testData {
-		output := Tokenize([]byte(testcase.input))
+		output, _ := Tokenize([]byte(testcase.input))
 		var expB [][]byte
 		for _, exp := range testcase.expected {
 			expB = append(expB, []byte(exp))

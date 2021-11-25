@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func ParseInputJson(json string) [][]byte {
+func ParseInputJson(json string) ([][]byte, error) {
 	var parsedb []byte
 	if json == "" {
 		log.Debugln("json input not provided, fetching from stdin")
