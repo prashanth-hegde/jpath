@@ -81,11 +81,11 @@ func Filter(path string, json [][]byte) ([][]byte, error) {
 				case "<", ">", "<=", ">=":
 					lhs, e := strconv.ParseFloat(string(intermediate), 64)
 					if e != nil {
-						return nil, errors.Wrap(e, "error while parsing number")
+						return nil, errors.Wrapf(e, "error while parsing lhs %s", intermediate)
 					}
 					rhs, e := strconv.ParseFloat(value, 64)
 					if e != nil {
-						return nil, errors.Wrap(e, "error while parsing number")
+						return nil, errors.Wrapf(e, "error while parsing rhs %s", value)
 					}
 					if operator == "<" && lhs < rhs ||
 						operator == "<=" && lhs <= rhs ||
