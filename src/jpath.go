@@ -26,7 +26,7 @@ func main() {
 		Use:   "jpath <expression> <json>",
 		Short: "analyzer for json data",
 		Long: `An easy to use json filter to analyze json documents
-                Complete documentation is available at https://gitlab.com/encyclopaedia/jpath/-/blob/main/readme.md`,
+                Complete documentation is available at https://github.com/prashanth-hegde/jpath`,
 		Args: cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			switch len(args) {
