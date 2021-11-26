@@ -9,9 +9,9 @@ import (
 // fixme: need a smarter way to hold parsed regexes. This is very ugly
 const (
 	KeyRegex       string = `^[a-zA-Z0-9_-]+$`
-	FilterRegex           = `^(\w+)?\[([\w.]+)(=|!=|<=?|>=?)([^]]+)]$`
+	FilterRegex           = `^(\w+)?\[([\w.]+)(=|!=|<=?|>=?)(.*)]$`
 	SelectionRegex        = `^{([\w,.-]+)}$`
-	SliceRegex            = `^\[(-?\d+)?:(-?\d+)?\]$`
+	SliceRegex            = `^(\w+)?\[(-?\d+)?:(-?\d+)?\]$`
 	CountRegex            = `^#$`
 	//NonStringRegex 		  = `^\d+|null|$`
 )
@@ -83,7 +83,7 @@ func ProcessExpression(expr string, json [][]byte) ([][]byte, error) {
 		} else if countReg.MatchString(exp) {
 			// todo: implementation pending
 		} else if sliceReg.MatchString(exp) {
-			// todo: implementation pending
+			json, e = Slice(exp, json)
 		} else {
 			return nil, common.InvalidExpr.Error()
 		}

@@ -12,14 +12,24 @@ func Slice(expr string, json [][]byte) ([][]byte, error) {
 	jsonLength := int64(len(json))
 	lower := int64(0)
 	upper := jsonLength
+
 	for _, line := range sliceRe.FindAllStringSubmatch(expr, -1) {
 		var e error
-		lower, e = strconv.ParseInt(line[1], 10, 64)
+		// results[ 1 : 3 ]
+		descend := line[1] // capture group 1
+		if len(line[1]) > 0 {
+			json, e = Get(descend, json, true)
+			if e != nil {
+				return nil, errors.Wrapf(e, "error while traversing document %s", descend)
+			}
+		}
+
+		lower, e = strconv.ParseInt(line[2], 10, 64)
 		if e != nil {
 			lower = 0
 			//return nil, errors.Wrapf(e, "error converting to int: %s", line[1])
 		}
-		upper, e = strconv.ParseInt(line[2], 10, 64)
+		upper, e = strconv.ParseInt(line[3], 10, 64)
 		if e != nil {
 			upper = jsonLength
 			//return nil, errors.Wrapf(e, "error converting to int: %s", line[2])
