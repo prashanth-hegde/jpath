@@ -11,7 +11,7 @@ const (
 	KeyRegex       string = `^[a-zA-Z0-9_-]+$`
 	FilterRegex           = `^(\w+)?\[([\w.]+)(=|!=|<=?|>=?)([^]]+)]$`
 	SelectionRegex        = `^{([\w,.-]+)}$`
-	SliceRegex            = `^\[(\d+)?:(\d+)?\]$`
+	SliceRegex            = `^\[(-?\d+)?:(-?\d+)?\]$`
 	CountRegex            = `^#$`
 	//NonStringRegex 		  = `^\d+|null|$`
 )

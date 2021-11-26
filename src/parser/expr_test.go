@@ -38,6 +38,7 @@ func TestProcessExpression(t *testing.T) {
 		expected []string
 	}{
 		{"base", `info`, []string{`{"seed":"17b3298ce93fa1a4","results":10,"page":1,"version":"1.3"}`}},
+		{"space", `info  `, []string{`{"seed":"17b3298ce93fa1a4","results":10,"page":1,"version":"1.3"}`}},
 		{"nested", `results.gender`, []string{"female", "male", "male", "male", "female", "male", "female", "male", "female", "male"}},
 		{"deepnested", `results.name.title`, []string{"Mrs", "Mr", "Mr", "Mr", "Mrs", "Mr", "Mrs", "Mr", "Miss", "Mr"}},
 		{"nestedsub", `results.name[title=Mrs]`, []string{`{"title":"Mrs","first":"Melodie","last":"Gagné"}`, `{"title":"Mrs","first":"Scarlett","last":"Ramos"}`, `{"title":"Mrs","first":"Johanne","last":"Leonhardt"}`}},
@@ -61,6 +62,24 @@ func TestProcessExpression(t *testing.T) {
 		if !reflect.DeepEqual(expectedTokens, output) {
 			//t.Errorf("%s --> failed", testcase.name)
 			t.Errorf("%s --> failed \n===\nexpected: %s\n===\nactual: %s\n", testcase.name, expectedTokens, output)
+		}
+	}
+
+	// error cases
+	errorData := []struct {
+		name     string
+		input    string
+		expected common.ErrorCode
+	}{
+		{"closingParen", `results[name=test]]`, common.InvalidExpr},
+		{"openParen", `results[[name=test]`, common.InvalidExpr},
+		{"noMatchRegex", `results(name=test)`, common.InvalidExpr},
+	}
+	for _, testcase := range errorData {
+		_, e := ProcessExpression(testcase.input, testJson)
+		if e == nil || !strings.ContainsAny(e.Error(), testcase.expected.GetMsg()) {
+			t.Errorf("%s --> failed \n===\nexpected: %s\n===\nactual: %s\n",
+				testcase.name, testcase.expected.GetMsg(), e.Error())
 		}
 	}
 }
