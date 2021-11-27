@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"jpath/common"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -77,12 +78,26 @@ func Filter(path string, json [][]byte) ([][]byte, error) {
 					if bytes.Compare(intermediate, []byte(value)) != 0 {
 						filtered = append(filtered, doc)
 					}
+				case "<", ">", "<=", ">=":
+					lhs, e := strconv.ParseFloat(string(intermediate), 64)
+					if e != nil {
+						return nil, errors.Wrapf(e, "error while parsing lhs %s", intermediate)
+					}
+					rhs, e := strconv.ParseFloat(value, 64)
+					if e != nil {
+						return nil, errors.Wrapf(e, "error while parsing rhs %s", value)
+					}
+					if operator == "<" && lhs < rhs ||
+						operator == "<=" && lhs <= rhs ||
+						operator == ">" && lhs > rhs ||
+						operator == ">=" && lhs >= rhs {
+						filtered = append(filtered, doc)
+					}
 				default:
 					// todo: pending
 				}
 			}
 		}
-
 		// todo: implementation pending
 	}
 	return filtered, nil

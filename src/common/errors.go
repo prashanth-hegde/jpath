@@ -16,6 +16,7 @@ const (
 	UnknownDataType
 	UnmarshalError
 	UnprintableData
+	NumberError
 )
 
 func ExitWithError(code ErrorCode) {
@@ -31,6 +32,7 @@ var ErrorMessage = map[ErrorCode]string{
 	UnknownDataType: "unknown data type in json object",
 	UnmarshalError:  "error while unmarshalling json into map",
 	UnprintableData: "data not printable",
+	NumberError:     "not a number",
 }
 
 func (e ErrorCode) GetMsg() string {

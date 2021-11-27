@@ -9,7 +9,7 @@ import (
 // fixme: need a smarter way to hold parsed regexes. This is very ugly
 const (
 	KeyRegex       string = `^[a-zA-Z0-9_-]+$`
-	FilterRegex           = `^(\w+)?\[([\w.]+)(=|!=)([^]]+)]$`
+	FilterRegex           = `^(\w+)?\[([\w.]+)(=|!=|<=?|>=?)([^]]+)]$`
 	SelectionRegex        = `^{([\w,.-]+)}$`
 	SliceRegex            = `^\[(\d+)?:(\d+)?\]$`
 	CountRegex            = `^#$`
