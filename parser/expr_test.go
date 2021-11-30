@@ -57,6 +57,12 @@ func TestProcessExpression(t *testing.T) {
 		{"dotSeperator", `results.name.[:1]`, []string{`{"title":"Mrs","first":"Melodie","last":"Gagné"}`}},
 		{"noSeparator", `results.name[:1]`, []string{`{"title":"Mrs","first":"Melodie","last":"Gagné"}`}},
 		{"last", `results.name[-1:]`, []string{`{"title":"Mr","first":"Koray","last":"Adal"}`}},
+
+		// count
+		{"count", `results.#`, []string{`10`}},
+		{"countDown", `results.name.#`, []string{`10`}},
+		{"countFilter", `results.name[title=Mrs].#`, []string{`3`}},
+		{"countNotExists", `results.name[title=nothing].#`, []string{`0`}},
 	}
 	for _, testcase := range testData {
 		output, _ := ProcessExpression(testcase.input, testJson)
