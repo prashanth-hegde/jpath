@@ -58,6 +58,12 @@ func TestProcessExpression(t *testing.T) {
 		{"noSeparator", `results.name[:1]`, []string{`{"title":"Mrs","first":"Melodie","last":"Gagné"}`}},
 		{"last", `results.name[-1:]`, []string{`{"title":"Mr","first":"Koray","last":"Adal"}`}},
 
+		// count
+		{"count", `results.#`, []string{`10`}},
+		{"countDown", `results.name.#`, []string{`10`}},
+		{"countFilter", `results.name[title=Mrs].#`, []string{`3`}},
+		{"countNotExists", `results.name[title=nothing].#`, []string{`0`}},
+
 		// regex
 		{"regexBasic", `results.name[first~^Y]`, []string{`{"title":"Miss","first":"Yesim","last":"Nijenkamp"}`}},
 		{"regexContains", `results.name[last~N]`, []string{`{"title":"Miss","first":"Yesim","last":"Nijenkamp"}`}},

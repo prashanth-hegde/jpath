@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"jpath/common"
 	"regexp"
@@ -81,7 +82,9 @@ func ProcessExpression(expr string, json [][]byte) ([][]byte, error) {
 		} else if selectionReg.MatchString(exp) {
 			json, e = Select(exp, json)
 		} else if countReg.MatchString(exp) {
-			// todo: implementation pending
+			count := make([][]byte, 1)
+			count[0] = []byte(fmt.Sprintf("%d", len(json)))
+			json = count
 		} else if sliceReg.MatchString(exp) {
 			json, e = Slice(exp, json)
 		} else {
