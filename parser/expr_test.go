@@ -57,6 +57,11 @@ func TestProcessExpression(t *testing.T) {
 		{"dotSeperator", `results.name.[:1]`, []string{`{"title":"Mrs","first":"Melodie","last":"Gagné"}`}},
 		{"noSeparator", `results.name[:1]`, []string{`{"title":"Mrs","first":"Melodie","last":"Gagné"}`}},
 		{"last", `results.name[-1:]`, []string{`{"title":"Mr","first":"Koray","last":"Adal"}`}},
+
+		// regex
+		{"regexBasic", `results.name[first~^Y]`, []string{`{"title":"Miss","first":"Yesim","last":"Nijenkamp"}`}},
+		{"regexContains", `results.name[last~N]`, []string{`{"title":"Miss","first":"Yesim","last":"Nijenkamp"}`}},
+		{"regexSpecials01", `results.name[title~\w{4}]`, []string{`{"title":"Miss","first":"Yesim","last":"Nijenkamp"}`}},
 	}
 	for _, testcase := range testData {
 		output, _ := ProcessExpression(testcase.input, testJson)

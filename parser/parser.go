@@ -93,6 +93,12 @@ func Filter(path string, json [][]byte) ([][]byte, error) {
 						operator == ">=" && lhs >= rhs {
 						filtered = append(filtered, doc)
 					}
+				case "~":
+					regex := regexp.MustCompile(value)
+					matched := regex.Find(intermediate)
+					if len(matched) > 0 {
+						filtered = append(filtered, doc)
+					}
 				default:
 					// todo: pending
 				}
