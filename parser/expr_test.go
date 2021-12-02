@@ -63,6 +63,11 @@ func TestProcessExpression(t *testing.T) {
 		{"countDown", `results.name.#`, []string{`10`}},
 		{"countFilter", `results.name[title=Mrs].#`, []string{`3`}},
 		{"countNotExists", `results.name[title=nothing].#`, []string{`0`}},
+
+		// regex
+		{"regexBasic", `results.name[first~^Y]`, []string{`{"title":"Miss","first":"Yesim","last":"Nijenkamp"}`}},
+		{"regexContains", `results.name[last~N]`, []string{`{"title":"Miss","first":"Yesim","last":"Nijenkamp"}`}},
+		{"regexSpecials01", `results.name[title~\w{4}]`, []string{`{"title":"Miss","first":"Yesim","last":"Nijenkamp"}`}},
 	}
 	for _, testcase := range testData {
 		output, _ := ProcessExpression(testcase.input, testJson)
