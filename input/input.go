@@ -3,7 +3,6 @@ package input
 import (
 	"bufio"
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"jpath/common"
 	"os"
@@ -19,10 +18,8 @@ func ParseInputJson(json string) ([][]byte, error) {
 		}
 		parsedb = p
 	} else if json[0] == '{' || json[0] == '[' {
-		log.Debugln("valid json, parsing it")
 		parsedb = []byte(json)
 	} else {
-		log.Debugf("could be a file, checking %s\n", json)
 		file, e := os.Open(json)
 		defer closeFile(file)
 		if e != nil {
