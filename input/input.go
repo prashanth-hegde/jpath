@@ -7,12 +7,10 @@ import (
 	"io"
 	"jpath/common"
 	"os"
-	"time"
 )
 
 // ParseInputJson reads the input and makes a json out of it
 func ParseInputJson(json string) ([][]byte, error) {
-	start := time.Now()
 	var parsedb []byte
 	if json == "" {
 		p, e := readMultiDocumentArray(os.Stdin)
@@ -37,7 +35,6 @@ func ParseInputJson(json string) ([][]byte, error) {
 		parsedb = p
 	}
 
-	log.Infof("time taken to process = %s", time.Since(start))
 	return common.Tokenize(parsedb)
 }
 
