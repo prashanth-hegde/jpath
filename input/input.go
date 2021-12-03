@@ -2,20 +2,20 @@ package input
 
 import (
 	"bufio"
-	"bytes"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"io"
-	"io/ioutil"
 	"jpath/common"
 	"os"
+	"time"
 )
 
 // ParseInputJson reads the input and makes a json out of it
 func ParseInputJson(json string) ([][]byte, error) {
+	start := time.Now()
 	var parsedb []byte
 	if json == "" {
-		p, e := readMultiDocumentArray()
+		p, e := readMultiDocumentArray(os.Stdin)
 		if e != nil {
 			return nil, e
 		}
@@ -25,13 +25,19 @@ func ParseInputJson(json string) ([][]byte, error) {
 		parsedb = []byte(json)
 	} else {
 		log.Debugf("could be a file, checking %s\n", json)
-		data, err := ioutil.ReadFile(json)
-		if err != nil {
-			common.ExitWithError(common.FileError)
+		file, e := os.Open(json)
+		defer closeFile(file)
+		if e != nil {
+			return nil, errors.Wrapf(e, "error while opening file %s\n", json)
 		}
-		parsedb = bytes.TrimSpace(data)
+		p, e := readMultiDocumentArray(file)
+		if e != nil {
+			return nil, e
+		}
+		parsedb = p
 	}
 
+	log.Infof("time taken to process = %s", time.Since(start))
 	return common.Tokenize(parsedb)
 }
 
@@ -48,11 +54,11 @@ func ParseInputJson(json string) ([][]byte, error) {
 // There are multiple approaches for doing this
 // 1. separate by new lines --> not a great assumption to make that input json will always be compressed
 // 2. parse the input manually, wrap the input objects into an array and tokenize them --> more code, but reliable
-func readMultiDocumentArray() ([]byte, error) {
-	reader := bufio.NewReader(os.Stdin) // stdin reader
-	documents := make([][]byte, 0)      // output documents
-	var parenthesis []bool              // parenthesis stack
-	var document []byte                 // current document
+func readMultiDocumentArray(file *os.File) ([]byte, error) {
+	reader := bufio.NewReader(file) // file reader
+	documents := make([][]byte, 0)  // output documents
+	var parenthesis []bool          // parenthesis stack
+	var document []byte             // current document
 
 	for {
 		// read each byte
@@ -95,4 +101,11 @@ func readMultiDocumentArray() ([]byte, error) {
 	}
 
 	return common.WrapIntoArray(documents), nil
+}
+
+func closeFile(f *os.File) {
+	err := f.Close()
+	if err != nil {
+		common.ExitWithError(common.FileError)
+	}
 }
