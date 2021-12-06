@@ -11,14 +11,26 @@ import (
 	"strings"
 )
 
-func main() {
-	// todo: flags and features
-	// 1. -v for verbose logging
-	// 2. -i for indented output (-i 0) for compressed output
-	// 3. -z for specifying timezones for timestamps
+func outStreamer() {
+	doc := <-common.Conf.Channel
+	fmt.Printf("single json -->\n%s\n", "")
+	tokenized, e := common.Tokenize(doc)
+	if e != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", e.Error())
+	}
+	parsed, e := parser.ProcessExpression(common.Conf.Expr, tokenized)
+	if e != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", e.Error())
+	}
+	e = output.PrintOutput(parsed)
+	if e != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", e.Error())
+	}
+}
 
+func main() {
 	// mandatory variables
-	var expr string
+	// var expr string
 	var json string
 
 	// root command parser
@@ -31,10 +43,10 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			switch len(args) {
 			case 1:
-				expr = strings.TrimSpace(args[0])
+				common.Conf.Expr = strings.TrimSpace(args[0])
 				json = ""
 			case 2:
-				expr = strings.TrimSpace(args[0])
+				common.Conf.Expr = strings.TrimSpace(args[0])
 				json = strings.TrimSpace(args[1])
 			default:
 			}
@@ -42,16 +54,25 @@ func main() {
 	}
 
 	// table output
-	var table bool
-	rootCmd.Flags().BoolVarP(&table, "table", "t", false, "print output as table")
+	rootCmd.Flags().BoolVarP(&common.Conf.Table, "table", "t", false, "print output as table")
+	// unwrap
+	rootCmd.Flags().BoolVarP(&common.Conf.Unwrap, "unwrap", "u", false, "unwrap the output from array")
+	// compress
+	rootCmd.Flags().BoolVarP(&common.Conf.Compact, "compress", "c", false, "compress the output")
 
 	// parse input args
 	if err := rootCmd.Execute(); err != nil {
 		//_, _ = fmt.Fprintf(os.Stderr, "\n%s\n\n%s\n", err.Error(), rootCmd.UsageString())
 		os.Exit(1)
-	} else if expr == "" && json == "" {
+	} else if common.Conf.Expr == "" && json == "" {
 		_, _ = fmt.Fprintf(os.Stderr, "\n%s\n\n%s\n", "no expression or json document provided", rootCmd.UsageString())
 		os.Exit(1)
+	}
+
+	// if unwrap option is selected, create an output channel
+	if common.Conf.Unwrap {
+		common.Conf.Channel = make(chan []byte, 10)
+		go outStreamer()
 	}
 
 	// parse the input json
@@ -60,29 +81,13 @@ func main() {
 		common.ExitWithError(common.InvalidJson)
 	}
 	// parse the expression
-	parsedOutput, err := parser.ProcessExpression(expr, jsonb)
+	parsedOutput, err := parser.ProcessExpression(common.Conf.Expr, jsonb)
 	if err != nil {
-		if strings.Contains(err.Error(), common.InvalidExpr.GetMsg()) {
-			common.ExitWithError(common.InvalidExpr)
-		} else {
-			// fixme: handle more error types here
-			common.ExitWithError(common.Success)
-		}
-	} else if parsedOutput == nil {
-		os.Exit(int(common.Success))
+		common.ExitWithMessage("error: " + err.Error())
 	}
-
-	// process output
-	// fixme: the error handling below is sort of wonky. need more elegant handling
-	if table {
-		err = output.PrintJsonTable(parsedOutput)
-		if err == nil {
-			os.Exit(int(common.Success))
-		}
-	}
+	// print the output
+	err = output.PrintOutput(parsedOutput)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "\n%s, printing as json\n", err.Error())
+		common.ExitWithMessage(err.Error())
 	}
-	marshal := output.Prettify(parsedOutput, 2)
-	fmt.Printf("%s\n", marshal)
 }

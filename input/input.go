@@ -20,6 +20,7 @@ func ParseInputJson(json string) ([][]byte, error) {
 	} else if json[0] == '{' || json[0] == '[' {
 		parsedb = []byte(json)
 	} else {
+		//file, e := os.OpenFile(json, os.O_RDONLY, 0400)
 		file, e := os.Open(json)
 		defer closeFile(file)
 		if e != nil {
@@ -32,6 +33,7 @@ func ParseInputJson(json string) ([][]byte, error) {
 		parsedb = p
 	}
 
+	//defer close(common.Conf.Channel)
 	return common.Tokenize(parsedb)
 }
 
@@ -39,8 +41,8 @@ func ParseInputJson(json string) ([][]byte, error) {
 // One limitation with the underlying library is that it parses fully
 // formed json, and ignores the rest. For example, consider this input:
 //
-// {"name": "Abraham Lincoln": "quote": "Whatever you are, be a good one"}
-// {"name": "Oscar Wilde": "quote": "I can resist everything except temptation"}
+// {"name": "Abraham Lincoln", "quote": "Whatever you are, be a good one"}
+// {"name": "Oscar Wilde", "quote": "I can resist everything except temptation"}
 //
 // Notice the above input has a new line separator, and are two independent json objects
 // The jsonparser library only takes the first one if we provide this as an input
@@ -84,8 +86,18 @@ func readMultiDocumentArray(file *os.File) ([]byte, error) {
 
 		// append finalized documents
 		if len(parenthesis) == 0 && len(document) > 0 {
-			// if the last parenthesis is closed, add this to the array and clear the document
-			documents = append(documents, document)
+			// when an individual doc is read:
+			if common.Conf.Unwrap {
+				// if reading a streaming input, process the doc right away
+				//if e := parser.StreamOutput(document); e != nil {
+				//    _, _ = fmt.Fprintf(os.Stderr, "%s\n", e.Error())
+				//}
+				common.Conf.Channel <- document
+			} else {
+				// if not streaming input, add it to array to process later (example: table out)
+				documents = append(documents, document)
+			}
+			// ensure the document is cleared
 			document = nil
 		}
 	}
@@ -93,7 +105,6 @@ func readMultiDocumentArray(file *os.File) ([]byte, error) {
 	if len(parenthesis) > 0 {
 		return nil, common.InvalidJson.Error()
 	}
-
 	return common.WrapIntoArray(documents), nil
 }
 

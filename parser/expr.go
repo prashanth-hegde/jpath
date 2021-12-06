@@ -14,7 +14,6 @@ const (
 	SelectionRegex        = `^{([\w,.-]+)}$`
 	SliceRegex            = `^(\w+)?\[(-?\d+)?:(-?\d+)?\]$`
 	CountRegex            = `^#$`
-	//NonStringRegex 		  = `^\d+|null|$`
 )
 
 // parseExpression Parses the expressions and makes workable tokens out of the expression

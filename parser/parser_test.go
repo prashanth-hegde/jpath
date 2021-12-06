@@ -28,7 +28,7 @@ func TestGet(t *testing.T) {
 		for _, exp := range testcase.expected {
 			expB = append(expB, []byte(exp))
 		}
-		if !reflect.DeepEqual(output, expB) {
+		if len(output) != len(expB) || !reflect.DeepEqual(output, expB) {
 			t.Errorf("%s --> failed \n===\nexpected: %s\n===\nactual: %s\n", testcase.name, expB, output)
 		}
 	}

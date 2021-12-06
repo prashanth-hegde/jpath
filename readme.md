@@ -62,11 +62,42 @@ Note: [Input json is provided by this api](https://randomuser.me/api/?results=10
 | find count of results from above    | N/A                     | N/A                               | `results[gender=female].#`
 | find name, dob and cell# for Males  | `.results[] \| select(.name.title = "Mr") \| {first:.name.first,last:.name.last,dob:.dob.date,cell:.cell}` | N/A | `'results[name.title=Mr].{name.first,name.last,dob.date,cell}'`
 
-TODO: more documentation pending
+### Concepts - command line flags
+| flag                  |  default  | description      |
+|-----------------------|-----------|------------------|
+| `-t\|--table`         | false     | Prints output in a tabular format. Works only for object types
+| `-u\|--unwrap`        | false     | Unwraps the output. Needed for processing streamed output (ex: kafka output)
+| `-c\|--compress`      | false     | Minifies the json output
+
+#### Note
+If `-t|--table` is provided, the program attempts to print the output in tabular format and ignores other flags
+
+#### Unwrap and Compress examples
+```
+example json: [{"one":"01", "two":"02"},{"three":"03", "four":"04"}]
++-------------------+-------------------------------+------------------------------------------------------+
+|                   |  --unwrap=true                |           --unwrap=false                             |
+|-------------------|-------------------------------|------------------------------------------------------|
+|--compact=true     | {"one":"01","two":"02"}       | [{"one":"01","two":"02"},{"three":"03","four":"04"}] |
+|                   | {"three":"03","four":"04"}    |                                                      |
+|-------------------|-------------------------------|------------------------------------------------------|
+|--compact=false    | {                             | [                                                    |
+|                   |   "one": "01",                |   {                                                  |
+|                   |   "two": "02"                 |     "one": "01",                                     |
+|                   | }                             |     "two": "02"                                      |
+|                   | {                             |   },                                                 |
+|                   |   "three": "03",              |   {                                                  |
+|                   |   "four": "04"                |     "three": "03",                                   |
+|                   | }                             |     "four": "04"                                     |
+|                   |                               |   }                                                  |
+|                   |                               | ]                                                    |
++-------------------+-------------------------------+------------------------------------------------------+
+```
 
 ### Credits
 Credits and heartfelt thanks to the following opensource projects that makes `jpath` a reality
 
-1. [colorjson](https://github.com/TylerBrock/colorjson) - colored terminal output
-2. [tablewriter](https://github.com/olekukonko/tablewriter) - table output
-3. [cobra](https://github.com/spf13/cobra) - cli parsing
+1. [jsonparser](https://github.com/buger/jsonparser) - heart of the system for fast json parsing
+2. [colorjson](https://github.com/TylerBrock/colorjson) - colored terminal output
+3. [tablewriter](https://github.com/olekukonko/tablewriter) - table output
+4. [cobra](https://github.com/spf13/cobra) - cli parsing

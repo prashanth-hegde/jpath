@@ -1,3 +1,4 @@
 .idea
 jpath-go.iml
-src/jpath
+jpath
+**/*.out
