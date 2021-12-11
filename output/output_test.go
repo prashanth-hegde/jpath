@@ -24,10 +24,11 @@ func TestPrintOutput(t *testing.T) {
 		{"wrapped-expand", false, false},
 		{"wrapped-compact", false, true},
 	}
-	tokenized, _ := input.ParseInputJson(strings.TrimSpace(json))
+	jsonb, _ := input.ParseInputJson(strings.TrimSpace(json))
+	tokenized, _ := common.Tokenize(jsonb)
 	for _, testcase := range testData {
 		parsed, _ := parser.ProcessExpression(".", tokenized)
-		common.Conf.Compact = testcase.compact
+		common.Conf.Compress = testcase.compact
 		common.Conf.Unwrap = testcase.unwrap
 		fmt.Printf("%s -->\n", testcase.name)
 		_ = PrintOutput(parsed)

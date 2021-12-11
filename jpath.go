@@ -11,26 +11,43 @@ import (
 	"strings"
 )
 
-func outStreamer() {
-	doc := <-common.Conf.Channel
-	fmt.Printf("single json -->\n%s\n", "")
-	tokenized, e := common.Tokenize(doc)
-	if e != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n", e.Error())
+// jpathAppRunner the main usage of jPath application
+// If jpath is used as a library in other applications, this is how it is
+func jpathAppRunner(parsedJson []byte) {
+	// tokenize the json doc
+	tokenized, err := common.Tokenize(parsedJson)
+	if err != nil {
+		common.ExitWithMessage("error: " + err.Error())
 	}
-	parsed, e := parser.ProcessExpression(common.Conf.Expr, tokenized)
-	if e != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n", e.Error())
+	// parse the expression
+	parsedOutput, err := parser.ProcessExpression(common.Conf.Expr, tokenized)
+	if err != nil {
+		common.ExitWithMessage("error: " + err.Error())
 	}
-	e = output.PrintOutput(parsed)
-	if e != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "%s\n", e.Error())
+	// print the output
+	err = output.PrintOutput(parsedOutput)
+	if err != nil {
+		common.ExitWithMessage(err.Error())
+	}
+}
+
+func streamOutput(outChannel <-chan []byte) {
+	for {
+		doc := <-outChannel
+		//if len(doc) > 0 {
+		// fixme: I found some cases where byte array may need to be copied
+		// fixme: more testing needed
+		//tmp := make([]byte, len(doc))
+		//copy(tmp, doc)
+		//jpathAppRunner(tmp)
+		jpathAppRunner(doc)
+		common.Conf.Wg.Done()
+		//}
 	}
 }
 
 func main() {
 	// mandatory variables
-	// var expr string
 	var json string
 
 	// root command parser
@@ -53,12 +70,9 @@ func main() {
 		},
 	}
 
-	// table output
 	rootCmd.Flags().BoolVarP(&common.Conf.Table, "table", "t", false, "print output as table")
-	// unwrap
 	rootCmd.Flags().BoolVarP(&common.Conf.Unwrap, "unwrap", "u", false, "unwrap the output from array")
-	// compress
-	rootCmd.Flags().BoolVarP(&common.Conf.Compact, "compress", "c", false, "compress the output")
+	rootCmd.Flags().BoolVarP(&common.Conf.Compress, "compress", "c", false, "compress the output")
 
 	// parse input args
 	if err := rootCmd.Execute(); err != nil {
@@ -71,23 +85,13 @@ func main() {
 
 	// if unwrap option is selected, create an output channel
 	if common.Conf.Unwrap {
-		common.Conf.Channel = make(chan []byte, 10)
-		go outStreamer()
+		go streamOutput(common.Conf.Channel)
 	}
 
 	// parse the input json
 	jsonb, err := input.ParseInputJson(json)
 	if err != nil {
-		common.ExitWithError(common.InvalidJson)
-	}
-	// parse the expression
-	parsedOutput, err := parser.ProcessExpression(common.Conf.Expr, jsonb)
-	if err != nil {
-		common.ExitWithMessage("error: " + err.Error())
-	}
-	// print the output
-	err = output.PrintOutput(parsedOutput)
-	if err != nil {
 		common.ExitWithMessage(err.Error())
 	}
+	jpathAppRunner(jsonb)
 }

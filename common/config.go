@@ -1,18 +1,24 @@
 package common
 
+import (
+	"sync"
+)
+
 type JPathConf struct {
-	Expr    string
-	Unwrap  bool
-	Table   bool
-	Compact bool
-	Indent  int
-	Channel chan []byte
+	Expr     string
+	Unwrap   bool
+	Table    bool
+	Compress bool
+	Indent   int
+	Channel  chan []byte
+	Wg       sync.WaitGroup
 }
 
-var Conf *JPathConf = &JPathConf{
-	Expr:    ".",
-	Unwrap:  false,
-	Table:   false,
-	Compact: false,
-	Indent:  2,
+var Conf = &JPathConf{
+	Expr:     ".",
+	Unwrap:   false,
+	Table:    false,
+	Compress: false,
+	Indent:   2,
+	Channel:  make(chan []byte, 1000),
 }

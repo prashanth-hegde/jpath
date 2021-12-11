@@ -1,6 +1,7 @@
 package input
 
 import (
+	"jpath/common"
 	"reflect"
 	"testing"
 )
@@ -15,7 +16,8 @@ func TestParseInputJson(t *testing.T) {
 		// todo: add stdin tests, I don't know how yet
 	}
 	for _, testcase := range testData {
-		output, _ := ParseInputJson(testcase.input)
+		parsed, _ := ParseInputJson(testcase.input)
+		output, _ := common.Tokenize(parsed)
 		var expB [][]byte
 		for _, exp := range testcase.expected {
 			expB = append(expB, []byte(exp))

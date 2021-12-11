@@ -1,6 +1,7 @@
 package main
 
 import (
+	"jpath/common"
 	"jpath/input"
 	"jpath/parser"
 	"testing"
@@ -14,6 +15,7 @@ import (
 // To render the flame graph, upload cpuprof_jpath.out on this page https://www.speedscope.app/
 // refer: https://sathishvj.medium.com/flamegraphs-for-code-optimization-with-golang-and-speedscope-80c20725fdd2
 func Benchmark_Jpath(b *testing.B) {
-	json, _ := input.ParseInputJson("/tmp/output.json")
+	jsonb, _ := input.ParseInputJson("/tmp/output.json")
+	json, _ := common.Tokenize(jsonb)
 	_, _ = parser.ProcessExpression(".event_context.container[location_id=3857].changed_values", json)
 }

@@ -9,7 +9,7 @@ import (
 )
 
 // ParseInputJson reads the input and makes a json out of it
-func ParseInputJson(json string) ([][]byte, error) {
+func ParseInputJson(json string) ([]byte, error) {
 	var parsedb []byte
 	if json == "" {
 		p, e := readMultiDocumentArray(os.Stdin)
@@ -20,7 +20,6 @@ func ParseInputJson(json string) ([][]byte, error) {
 	} else if json[0] == '{' || json[0] == '[' {
 		parsedb = []byte(json)
 	} else {
-		//file, e := os.OpenFile(json, os.O_RDONLY, 0400)
 		file, e := os.Open(json)
 		defer closeFile(file)
 		if e != nil {
@@ -33,8 +32,7 @@ func ParseInputJson(json string) ([][]byte, error) {
 		parsedb = p
 	}
 
-	//defer close(common.Conf.Channel)
-	return common.Tokenize(parsedb)
+	return parsedb, nil
 }
 
 // readMultiDocumentArray - get the json documents from stdin
@@ -88,11 +86,8 @@ func readMultiDocumentArray(file *os.File) ([]byte, error) {
 		if len(parenthesis) == 0 && len(document) > 0 {
 			// when an individual doc is read:
 			if common.Conf.Unwrap {
-				// if reading a streaming input, process the doc right away
-				//if e := parser.StreamOutput(document); e != nil {
-				//    _, _ = fmt.Fprintf(os.Stderr, "%s\n", e.Error())
-				//}
 				common.Conf.Channel <- document
+				common.Conf.Wg.Add(1)
 			} else {
 				// if not streaming input, add it to array to process later (example: table out)
 				documents = append(documents, document)
@@ -101,6 +96,9 @@ func readMultiDocumentArray(file *os.File) ([]byte, error) {
 			document = nil
 		}
 	}
+	// if there are any pending operations, wait to finish them before proceeding
+	common.Conf.Wg.Wait()
+
 	// if parenthesis is not closed after reading the whole stdin, that's an error
 	if len(parenthesis) > 0 {
 		return nil, common.InvalidJson.Error()

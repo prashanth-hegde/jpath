@@ -30,14 +30,14 @@ func PrintOutput(parsed [][]byte) error {
 	if common.Conf.Table {
 		e := PrintJsonTable(parsed)
 		return errors.Wrap(e, common.UnprintableTable.GetMsg())
-	} else if common.Conf.Compact && common.Conf.Unwrap {
+	} else if common.Conf.Compress && common.Conf.Unwrap {
 		for i := 0; i < len(parsed); i++ {
 			fmt.Printf("%s\n", compact(parsed[i]))
 		}
-	} else if common.Conf.Compact && !common.Conf.Unwrap {
+	} else if common.Conf.Compress && !common.Conf.Unwrap {
 		wrapped := common.WrapIntoArray(parsed)
 		fmt.Printf("%s\n", compact(wrapped))
-	} else if !common.Conf.Compact && common.Conf.Unwrap {
+	} else if !common.Conf.Compress && common.Conf.Unwrap {
 		op, e := ColoredUnwrappedOutput(parsed)
 		if e != nil {
 			return errors.Wrap(e, "error while printing uncompressed unwrapped output")
