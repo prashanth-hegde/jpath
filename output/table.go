@@ -60,6 +60,9 @@ func determineDataTypes(jsonRow []byte) ([]KeyProp, error) {
 }
 
 func PrintJsonTable(json [][]byte) error {
+	if len(json) == 0 {
+		return nil
+	}
 	keyProps, e := determineDataTypes(json[0])
 	if e != nil {
 		return errors.Wrap(e, common.UnknownDataType.GetMsg())

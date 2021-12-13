@@ -4,22 +4,11 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"jpath/common"
-	"regexp"
-)
-
-// fixme: need a smarter way to hold parsed regexes. This is very ugly
-const (
-	KeyRegex       string = `^[a-zA-Z0-9_-]+$`
-	FilterRegex           = `^(\w+)?\[([\w.]+)(=|!=|<=?|>=?|~)(.*)]$`
-	SelectionRegex        = `^{([\w,.-]+)}$`
-	SliceRegex            = `^(\w+)?\[(-?\d+)?:(-?\d+)?\]$`
-	CountRegex            = `^#$`
-	//NonStringRegex 		  = `^\d+|null|$`
 )
 
 // parseExpression Parses the expressions and makes workable tokens out of the expression
-// The basic idea is to keep track of dot separators and paranthesis
-// Dots are allowed within square and curly brackets. Not allowed outside of them
+// The basic idea is to keep track of dot separators and parenthesis
+// Dots are allowed within square and curly brackets. Not allowed outside them
 func parseExpression(expr string) ([]string, error) {
 	var tokens []string
 	var parenStack []bool
@@ -68,24 +57,18 @@ func ProcessExpression(expr string, json [][]byte) ([][]byte, error) {
 	if e != nil {
 		return nil, errors.Wrap(e, "error while parsing expression")
 	}
-	// fixme: the regexes must be centralized somehow. This is a bad place to put it
-	keyReg := regexp.MustCompile(KeyRegex)
-	filterReg := regexp.MustCompile(FilterRegex)
-	selectionReg := regexp.MustCompile(SelectionRegex)
-	countReg := regexp.MustCompile(CountRegex)
-	sliceReg := regexp.MustCompile(SliceRegex)
 	for _, exp := range parsedExpr {
-		if keyReg.MatchString(exp) {
+		if common.Matcher.KeyReg.MatchString(exp) {
 			json, e = Get(exp, json, true)
-		} else if filterReg.MatchString(exp) {
+		} else if common.Matcher.FilterReg.MatchString(exp) {
 			json, e = Filter(exp, json)
-		} else if selectionReg.MatchString(exp) {
+		} else if common.Matcher.SelectionReg.MatchString(exp) {
 			json, e = Select(exp, json)
-		} else if countReg.MatchString(exp) {
+		} else if common.Matcher.CountReg.MatchString(exp) {
 			count := make([][]byte, 1)
 			count[0] = []byte(fmt.Sprintf("%d", len(json)))
 			json = count
-		} else if sliceReg.MatchString(exp) {
+		} else if common.Matcher.SliceReg.MatchString(exp) {
 			json, e = Slice(exp, json)
 		} else {
 			return nil, common.InvalidExpr.Error()

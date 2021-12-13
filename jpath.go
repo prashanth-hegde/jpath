@@ -11,14 +11,43 @@ import (
 	"strings"
 )
 
-func main() {
-	// todo: flags and features
-	// 1. -v for verbose logging
-	// 2. -i for indented output (-i 0) for compressed output
-	// 3. -z for specifying timezones for timestamps
+// jpathAppRunner the main usage of jPath application
+// If jpath is used as a library in other applications, this is how it is
+func jpathAppRunner(parsedJson []byte) {
+	// tokenize the json doc
+	tokenized, err := common.Tokenize(parsedJson)
+	if err != nil {
+		common.ExitWithMessage("error: " + err.Error())
+	}
+	// parse the expression
+	parsedOutput, err := parser.ProcessExpression(common.Conf.Expr, tokenized)
+	if err != nil {
+		common.ExitWithMessage("error: " + err.Error())
+	}
+	// print the output
+	err = output.PrintOutput(parsedOutput)
+	if err != nil {
+		common.ExitWithMessage(err.Error())
+	}
+}
 
+func streamOutput(outChannel <-chan []byte) {
+	for {
+		doc := <-outChannel
+		//if len(doc) > 0 {
+		// fixme: I found some cases where byte array may need to be copied
+		// fixme: more testing needed
+		//tmp := make([]byte, len(doc))
+		//copy(tmp, doc)
+		//jpathAppRunner(tmp)
+		jpathAppRunner(doc)
+		common.Conf.Wg.Done()
+		//}
+	}
+}
+
+func main() {
 	// mandatory variables
-	var expr string
 	var json string
 
 	// root command parser
@@ -31,58 +60,38 @@ func main() {
 		Run: func(cmd *cobra.Command, args []string) {
 			switch len(args) {
 			case 1:
-				expr = strings.TrimSpace(args[0])
+				common.Conf.Expr = strings.TrimSpace(args[0])
 				json = ""
 			case 2:
-				expr = strings.TrimSpace(args[0])
+				common.Conf.Expr = strings.TrimSpace(args[0])
 				json = strings.TrimSpace(args[1])
 			default:
 			}
 		},
 	}
 
-	// table output
-	var table bool
-	rootCmd.Flags().BoolVarP(&table, "table", "t", false, "print output as table")
+	rootCmd.Flags().BoolVarP(&common.Conf.Table, "table", "t", false, "print output as table")
+	rootCmd.Flags().BoolVarP(&common.Conf.Unwrap, "unwrap", "u", false, "unwrap the output from array")
+	rootCmd.Flags().BoolVarP(&common.Conf.Compress, "compress", "c", false, "compress the output")
 
 	// parse input args
 	if err := rootCmd.Execute(); err != nil {
 		//_, _ = fmt.Fprintf(os.Stderr, "\n%s\n\n%s\n", err.Error(), rootCmd.UsageString())
 		os.Exit(1)
-	} else if expr == "" && json == "" {
+	} else if common.Conf.Expr == "" && json == "" {
 		_, _ = fmt.Fprintf(os.Stderr, "\n%s\n\n%s\n", "no expression or json document provided", rootCmd.UsageString())
 		os.Exit(1)
+	}
+
+	// if unwrap option is selected, create an output channel
+	if common.Conf.Unwrap {
+		go streamOutput(common.Conf.Channel)
 	}
 
 	// parse the input json
 	jsonb, err := input.ParseInputJson(json)
 	if err != nil {
-		common.ExitWithError(common.InvalidJson)
+		common.ExitWithMessage(err.Error())
 	}
-	// parse the expression
-	parsedOutput, err := parser.ProcessExpression(expr, jsonb)
-	if err != nil {
-		if strings.Contains(err.Error(), common.InvalidExpr.GetMsg()) {
-			common.ExitWithError(common.InvalidExpr)
-		} else {
-			// fixme: handle more error types here
-			common.ExitWithError(common.Success)
-		}
-	} else if parsedOutput == nil {
-		os.Exit(int(common.Success))
-	}
-
-	// process output
-	// fixme: the error handling below is sort of wonky. need more elegant handling
-	if table {
-		err = output.PrintJsonTable(parsedOutput)
-		if err == nil {
-			os.Exit(int(common.Success))
-		}
-	}
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "\n%s, printing as json\n", err.Error())
-	}
-	marshal := output.Prettify(parsedOutput, 2)
-	fmt.Printf("%s\n", marshal)
+	jpathAppRunner(jsonb)
 }

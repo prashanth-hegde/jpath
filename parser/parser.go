@@ -16,6 +16,7 @@ import (
 // Tokenize param if true, treats array as a list of items (for further breakdown)
 // if false, treats array as just a string, and does not break down the array
 func Get(path string, json [][]byte, tokenize bool) ([][]byte, error) {
+	//var tokens = make([][]byte, 0)
 	var tokens [][]byte
 	fields := strings.Split(path, ".")
 	for _, item := range json {
@@ -40,8 +41,9 @@ func Get(path string, json [][]byte, tokenize bool) ([][]byte, error) {
 }
 
 func Filter(path string, json [][]byte) ([][]byte, error) {
-	filterRe := regexp.MustCompile(FilterRegex)
+	filterRe := common.Matcher.FilterReg
 	var e error
+	//var filtered = make([][]byte, 0)
 	var filtered [][]byte
 	// don't worry about the nested for loops
 	// the outermost and innermost are guaranteed to have a size of 1
@@ -110,7 +112,8 @@ func Filter(path string, json [][]byte) ([][]byte, error) {
 }
 
 func Select(path string, json [][]byte) ([][]byte, error) {
-	selectRe := regexp.MustCompile(SelectionRegex)
+	selectRe := common.Matcher.SelectionReg
+	//var selected = make([][]byte, 0)
 	var selected [][]byte
 	for _, line := range selectRe.FindAllStringSubmatch(path, -1) {
 		fields := strings.Split(line[1], ",")

@@ -3,12 +3,11 @@ package parser
 import (
 	"github.com/pkg/errors"
 	"jpath/common"
-	"regexp"
 	"strconv"
 )
 
 func Slice(expr string, json [][]byte) ([][]byte, error) {
-	sliceRe := regexp.MustCompile(SliceRegex)
+	sliceRe := common.Matcher.SliceReg
 	jsonLength := int64(len(json))
 	lower := int64(0)
 	upper := jsonLength

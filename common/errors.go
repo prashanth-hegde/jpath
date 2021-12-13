@@ -16,6 +16,7 @@ const (
 	UnknownDataType
 	UnmarshalError
 	UnprintableData
+	UnprintableTable
 	NumberError
 )
 
@@ -25,14 +26,15 @@ func ExitWithError(code ErrorCode) {
 }
 
 var ErrorMessage = map[ErrorCode]string{
-	Success:         "",
-	InvalidJson:     "invalid json, aborting",
-	InvalidExpr:     "invalid expression, aborting",
-	FileError:       "file not json or unreadable, aborting",
-	UnknownDataType: "unknown data type in json object",
-	UnmarshalError:  "error while unmarshalling json into map",
-	UnprintableData: "data not printable",
-	NumberError:     "not a number",
+	Success:          "",
+	InvalidJson:      "invalid json, aborting",
+	InvalidExpr:      "invalid expression, aborting",
+	FileError:        "file not json or unreadable, aborting",
+	UnknownDataType:  "unknown data type in json object",
+	UnmarshalError:   "error while unmarshalling json into map",
+	UnprintableData:  "data not printable",
+	UnprintableTable: "data not printable in a table format, use without -t option",
+	NumberError:      "not a number",
 }
 
 func (e ErrorCode) GetMsg() string {
@@ -46,4 +48,9 @@ func (e ErrorCode) ExitWithMessage() {
 
 func (e ErrorCode) Error() error {
 	return errors.New(e.GetMsg())
+}
+
+func ExitWithMessage(msg string) {
+	_, _ = fmt.Fprintf(os.Stderr, "%s\n", msg)
+	os.Exit(1)
 }
