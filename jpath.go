@@ -32,13 +32,13 @@ func jpathAppRunner(parsedJson []byte) {
 }
 
 func streamOutput(outChannel <-chan []byte) {
-	for {
-		doc := <-outChannel
-		if len(doc) > 0 {
-			jpathAppRunner(doc)
-			common.Conf.Wg.Done()
-		}
-	}
+    for {
+        doc := <-outChannel
+        if len(doc) > 0 {
+            jpathAppRunner(doc)
+            common.Conf.Wg.Done()
+        }
+    }
 }
 
 func main() {
