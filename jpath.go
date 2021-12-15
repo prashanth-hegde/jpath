@@ -34,15 +34,10 @@ func jpathAppRunner(parsedJson []byte) {
 func streamOutput(outChannel <-chan []byte) {
 	for {
 		doc := <-outChannel
-		//if len(doc) > 0 {
-		// fixme: I found some cases where byte array may need to be copied
-		// fixme: more testing needed
-		//tmp := make([]byte, len(doc))
-		//copy(tmp, doc)
-		//jpathAppRunner(tmp)
-		jpathAppRunner(doc)
-		common.Conf.Wg.Done()
-		//}
+		if len(doc) > 0 {
+			jpathAppRunner(doc)
+			common.Conf.Wg.Done()
+		}
 	}
 }
 
