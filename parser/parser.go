@@ -5,7 +5,7 @@ import (
 	"fmt"
 	parser "github.com/buger/jsonparser"
 	"github.com/pkg/errors"
-	"jpath/common"
+	"github.com/prashanth-hegde/jpath/common"
 	"regexp"
 	"strconv"
 	"strings"

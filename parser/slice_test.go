@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"jpath/common"
+	"github.com/prashanth-hegde/jpath/common"
 	"reflect"
 	"strings"
 	"testing"

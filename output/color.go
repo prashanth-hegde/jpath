@@ -7,7 +7,7 @@ import (
 	"github.com/TylerBrock/colorjson"
 	parser "github.com/buger/jsonparser"
 	"github.com/pkg/errors"
-	"jpath/common"
+	"github.com/prashanth-hegde/jpath/common"
 )
 
 func ColoredOutput(json [][]byte) ([]byte, error) {

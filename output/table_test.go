@@ -1,9 +1,9 @@
 package output
 
 import (
+	"github.com/prashanth-hegde/jpath/common"
+	"github.com/prashanth-hegde/jpath/parser"
 	"github.com/stretchr/testify/assert"
-	"jpath/common"
-	"jpath/parser"
 	"strings"
 	"testing"
 )

@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"jpath/common"
+	"github.com/prashanth-hegde/jpath/common"
 )
 
 // parseExpression Parses the expressions and makes workable tokens out of the expression

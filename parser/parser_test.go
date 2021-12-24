@@ -2,7 +2,7 @@ package parser
 
 import (
 	"github.com/pkg/errors"
-	"jpath/common"
+	"github.com/prashanth-hegde/jpath/common"
 	"reflect"
 	"testing"
 )
