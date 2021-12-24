@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/prashanth-hegde/jpath/common"
+	"github.com/prashanth-hegde/jpath/input"
+	"github.com/prashanth-hegde/jpath/output"
+	"github.com/prashanth-hegde/jpath/parser"
 	"github.com/spf13/cobra"
-	"jpath/common"
-	"jpath/input"
-	"jpath/output"
-	"jpath/parser"
 	"os"
 	"strings"
 )
@@ -32,13 +32,13 @@ func jpathAppRunner(parsedJson []byte) {
 }
 
 func streamOutput(outChannel <-chan []byte) {
-    for {
-        doc := <-outChannel
-        if len(doc) > 0 {
-            jpathAppRunner(doc)
-            common.Conf.Wg.Done()
-        }
-    }
+	for {
+		doc := <-outChannel
+		if len(doc) > 0 {
+			jpathAppRunner(doc)
+			common.Conf.Wg.Done()
+		}
+	}
 }
 
 func main() {

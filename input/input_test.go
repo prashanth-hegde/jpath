@@ -1,7 +1,7 @@
 package input
 
 import (
-	"jpath/common"
+	"github.com/prashanth-hegde/jpath/common"
 	"reflect"
 	"testing"
 )

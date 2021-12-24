@@ -2,3 +2,4 @@
 jpath-go.iml
 jpath
 **/*.out
+**/.DS_Store

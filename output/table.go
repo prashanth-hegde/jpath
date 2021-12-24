@@ -6,7 +6,7 @@ import (
 	parser "github.com/buger/jsonparser"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
-	"jpath/common"
+	"github.com/prashanth-hegde/jpath/common"
 	"os"
 )
 

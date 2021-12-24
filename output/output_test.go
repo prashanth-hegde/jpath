@@ -2,9 +2,9 @@ package output
 
 import (
 	"fmt"
-	"jpath/common"
-	"jpath/input"
-	"jpath/parser"
+	"github.com/prashanth-hegde/jpath/common"
+	"github.com/prashanth-hegde/jpath/input"
+	"github.com/prashanth-hegde/jpath/parser"
 	"strings"
 	"testing"
 )

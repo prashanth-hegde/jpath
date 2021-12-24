@@ -3,7 +3,7 @@ package output
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"jpath/common"
+	"github.com/prashanth-hegde/jpath/common"
 )
 
 // PrintOutput prints output that is non-tabular format

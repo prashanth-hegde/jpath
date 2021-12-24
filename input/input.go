@@ -3,8 +3,8 @@ package input
 import (
 	"bufio"
 	"github.com/pkg/errors"
+	"github.com/prashanth-hegde/jpath/common"
 	"io"
-	"jpath/common"
 	"os"
 )
 
