@@ -7,7 +7,7 @@ import (
 )
 
 func Slice(expr string, json [][]byte) ([][]byte, error) {
-	sliceRe := common.Matcher.SliceReg
+	sliceRe := common.SliceReg
 	jsonLength := int64(len(json))
 	lower := int64(0)
 	upper := jsonLength

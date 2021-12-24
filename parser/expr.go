@@ -58,17 +58,17 @@ func ProcessExpression(expr string, json [][]byte) ([][]byte, error) {
 		return nil, errors.Wrap(e, "error while parsing expression")
 	}
 	for _, exp := range parsedExpr {
-		if common.Matcher.KeyReg.MatchString(exp) {
+		if common.KeyReg.MatchString(exp) {
 			json, e = Get(exp, json, true)
-		} else if common.Matcher.FilterReg.MatchString(exp) {
+		} else if common.FilterReg.MatchString(exp) {
 			json, e = Filter(exp, json)
-		} else if common.Matcher.SelectionReg.MatchString(exp) {
+		} else if common.SelectionReg.MatchString(exp) {
 			json, e = Select(exp, json)
-		} else if common.Matcher.CountReg.MatchString(exp) {
+		} else if common.CountReg.MatchString(exp) {
 			count := make([][]byte, 1)
 			count[0] = []byte(fmt.Sprintf("%d", len(json)))
 			json = count
-		} else if common.Matcher.SliceReg.MatchString(exp) {
+		} else if common.SliceReg.MatchString(exp) {
 			json, e = Slice(exp, json)
 		} else {
 			return nil, common.InvalidExpr.Error()
