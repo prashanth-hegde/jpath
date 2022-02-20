@@ -68,6 +68,7 @@ Note: [Input json is provided by this api](https://randomuser.me/api/?results=10
 | `-t\|--table`         | false     | Prints output in a tabular format. Works only for object types
 | `-u\|--unwrap`        | false     | Unwraps the output. Needed for processing streamed output (ex: kafka output)
 | `-c\|--compress`      | false     | Minifies the json output
+| `-H\|--header`        | false     | header values for http request
 
 #### Note
 If `-t|--table` is provided, the program attempts to print the output in tabular format and ignores other flags
