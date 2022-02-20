@@ -12,6 +12,7 @@ type JPathConf struct {
 	Indent   int
 	Channel  chan []byte
 	Wg       sync.WaitGroup
+	Headers  []string
 }
 
 var Conf = &JPathConf{
@@ -21,4 +22,5 @@ var Conf = &JPathConf{
 	Compress: false,
 	Indent:   2,
 	Channel:  make(chan []byte, 1000),
+	Headers:  nil,
 }

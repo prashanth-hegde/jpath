@@ -5,7 +5,12 @@ import (
 	"github.com/pkg/errors"
 	"github.com/prashanth-hegde/jpath/common"
 	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"os"
+	"strings"
+	"time"
 )
 
 // ParseInputJson reads the input and makes a json out of it
@@ -19,6 +24,12 @@ func ParseInputJson(json string) ([]byte, error) {
 		parsedb = p
 	} else if json[0] == '{' || json[0] == '[' {
 		parsedb = []byte(json)
+	} else if len(json) > 4 && json[0:4] == "http" {
+		resp, e := httpGet(json, common.Conf.Headers)
+		if e != nil {
+			return nil, errors.Wrapf(e, "error making http request\n")
+		}
+		parsedb = resp
 	} else {
 		file, e := os.Open(json)
 		defer closeFile(file)
@@ -111,4 +122,36 @@ func closeFile(f *os.File) {
 	if err != nil {
 		common.ExitWithError(common.FileError)
 	}
+}
+
+var client = &http.Client{
+	CheckRedirect: func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	},
+	Timeout: 10 * time.Second,
+}
+
+func httpGet(url string, headers []string) ([]byte, error) {
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "err while creating http request %s", url)
+	}
+	for _, h := range headers {
+		tokens := strings.SplitN(h, ":", 2)
+		req.Header.Add(strings.TrimSpace(tokens[0]), strings.TrimSpace(tokens[1]))
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, errors.Wrapf(err, "err while reading %s", url)
+	}
+	if resp.StatusCode >= 300 {
+		return nil, errors.Errorf("non-success status code %d\n url %s\n", resp.StatusCode, url)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalf("error reading response body: %s", err.Error())
+	}
+
+	return body, nil
 }

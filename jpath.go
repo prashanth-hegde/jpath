@@ -68,6 +68,7 @@ func main() {
 	rootCmd.Flags().BoolVarP(&common.Conf.Table, "table", "t", false, "print output as table")
 	rootCmd.Flags().BoolVarP(&common.Conf.Unwrap, "unwrap", "u", false, "unwrap the output from array")
 	rootCmd.Flags().BoolVarP(&common.Conf.Compress, "compress", "c", false, "compress the output")
+	rootCmd.Flags().StringSliceVarP(&common.Conf.Headers, "header", "H", []string{}, "headers to be included for requests")
 
 	// parse input args
 	if err := rootCmd.Execute(); err != nil {
