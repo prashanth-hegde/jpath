@@ -7,6 +7,9 @@ import (
 )
 
 func Tokenize(json []byte) ([][]byte, error) {
+	if len(json) == 0 {
+		return nil, nil
+	}
 	var tokens [][]byte
 	v, t, _, e := parser.Get(json)
 	if e != nil {

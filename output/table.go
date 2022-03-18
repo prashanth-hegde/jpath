@@ -50,7 +50,6 @@ func determineDataTypes(jsonRow []byte) ([]KeyProp, error) {
 			}
 		}
 	default:
-
 	}
 
 	if keyProps == nil || len(keyProps) == 0 {
@@ -81,9 +80,9 @@ func PrintJsonTable(json [][]byte) error {
 		for j, k := range keyProps {
 			v, _, _, err := parser.Get(doc, k.Key)
 			if err != nil {
-				// when one field in one json document is not like others
-				return errors.Wrap(err, fmt.Sprintf("%s for document[%d] %s\n",
-					common.UnknownDataType.GetMsg(), i, k.Key))
+				// when one field in one json document is not like others,
+				// rather than throwing error, just return null instead
+				v = []byte("null")
 			}
 			printableJson[i][j] = string(v)
 		}
