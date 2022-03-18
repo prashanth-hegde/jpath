@@ -34,3 +34,13 @@ func TestPrintableJson(t *testing.T) {
 		}
 	}
 }
+
+func TestMissingFields(t *testing.T) {
+	missingFieldJson := []byte(`[{"category":"SUB_LOCATION","container_type":"REACH_TRUCK"},{"container_type":"AMNESTY_BIN"}]`)
+	json, _ := common.Tokenize(missingFieldJson)
+	common.Conf.Table = true
+	e := PrintJsonTable(json)
+	if e != nil && strings.ContainsAny(e.Error(), "Key path not found") {
+		t.Errorf("expected error = %s\n\tactual error = %s\n\n", "no error", e.Error())
+	}
+}
