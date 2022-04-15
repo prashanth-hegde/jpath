@@ -97,8 +97,8 @@ func readMultiDocumentArray(file *os.File) ([]byte, error) {
 		if len(parenthesis) == 0 && len(document) > 0 {
 			// when an individual doc is read:
 			if common.Conf.Unwrap {
-				common.Conf.Channel <- document
 				common.Conf.Wg.Add(1)
+				common.Conf.Channel <- document
 			} else {
 				// if not streaming input, add it to array to process later (example: table out)
 				documents = append(documents, document)
